@@ -5,40 +5,40 @@
 
 Each word in the sample text corresponds to a single RGB color.
 Using the frequency table we make from the text, we can procedurally
-generate a map of colored tiles that matches up with those words.
+generate a map of colored tiles that follows the same pattern.
 
-This is intended for use generating a map for a 2D game of some kind. """
+This is intended for use generating a map for some kind of 2D game. """
 
-import pygame
-import collections
 import random
 from math import ceil
-from fractions import gcd
+import pygame
 
 # Size of screen
-width = 800
-height = 640
+WIDTH = 800
+HEIGHT = 640
 
 # Sample text
-sourceText = ("Stop. Who would cross the Bridge of Death must answer me these questions three,"
-    " ere the other side he see. Ask me the questions, bridgekeeper."
-    " I am not afraid. What... is your name? My name is Sir Lancelot of Camelot."
-    " What... is your quest? To seek the Holy Grail. What... is your favourite colour?"
-    " Blue. Go on. Off you go. Oh, thank you. Thank you very much. That's easy."
-    " Stop. Who would cross the Bridge of Death must answer me these questions three,"
-    " ere the other side he see. Ask me the questions, bridgekeeper. I'm not afraid."
-    " What... is your name? Sir Robin of Camelot. What... is your quest? To seek the Holy Grail."
-    " What... is the capital of Assyria? [pause] I don't know that. [he is thrown over the edge into the volcano]"
-    " Auuuuuuuugh. Stop. What... is your name? Sir Galahad of Camelot. What... is your quest?"
-    " I seek the Grail. What... is your favourite colour? Blue. No, yel... [he is also thrown over the edge]"
-    " auuuuuuuugh. Hee hee heh. Stop. What... is your name? It is 'Arthur', King of the Britons."
-    " What... is your quest? To seek the Holy Grail. What... is the air-speed velocity of an unladen swallow?"
-    " What do you mean? An African or European swallow? Huh? I... I don't know that."
-    " [he is thrown over] Auuuuuuuugh. How do know so much about swallows?"
-    " Well, you have to know these things when you're a king, you know.")
+SOURCE_TEXT = ("Stop. Who would cross the Bridge of Death must answer me these questions three,"
+                " ere the other side he see. Ask me the questions, bridgekeeper."
+                " I am not afraid. What... is your name? My name is Sir Lancelot of Camelot."
+                " What... is your quest? To seek the Holy Grail. What... is your favourite colour?"
+                " Blue. Go on. Off you go. Oh, thank you. Thank you very much. That's easy."
+                " Stop. Who would cross the Bridge of Death must answer me these questions three, ere"
+                " the other side he see. Ask me the questions, bridgekeeper. I'm not afraid."
+                " What... is your name? Sir Robin of Camelot. What... is your quest?"
+                " To seek the Holy Grail. What... is the capital of Assyria? [pause]"
+                " I don't know that. [he is thrown over the edge into the volcano]"
+                " Auuuuuuuugh. Stop. What... is your name? Sir Galahad of Camelot. What... is your quest?"
+                " I seek the Grail. What... is your favourite colour? Blue. No, yel..."
+                " [he is also thrown over the edge] auuuuuuuugh. Hee hee heh. Stop."
+                " What... is your name? It is 'Arthur', King of the Britons."
+                " What... is your quest? To seek the Holy Grail. What... is the air-speed velocity of an unladen swallow?"
+                " What do you mean? An African or European swallow? Huh? I... I don't know that."
+                " [he is thrown over] Auuuuuuuugh. How do know so much about swallows?"
+                " Well, you have to know these things when you're a king, you know.")
 
 def buildFrequencyTable(sourceText):
-    """ Returns a dictionary of dictionaries representing each word in the text and what words are most likely to come after it."""
+    """ Build a table pairing each word in the sample text with what word(s) are most likely to come after it. """
 
     # Turn the input text into a list of words/tokens
     sourceList = sourceText.split()
@@ -71,34 +71,35 @@ def buildFrequencyTable(sourceText):
     return markovModel
 
 def getColorFromString(baseString):
-    """ Takes an arbitrary string and returns an RGB tuple from the first 3 bytes. """
+    """ Take an arbitrary string and return a RGB tuple from the first 3 bytes. """
 
     # Get byte array of string
-    bytes = bytearray(baseString.encode('utf8'))
+    stringBytes = bytearray(baseString.encode('utf8'))
 
-    # In case the byte array < 3
+    # Default values in case the byte array length < 3
     rgb = [0, 0, 0]
 
-    if len(bytes) <= 3:
-        for i in range(len(bytes)):
-            rgb[i] = bytes[i]
+    if len(stringBytes) <= 3:
+        for i in range(len(stringBytes)):
+            rgb[i] = stringBytes[i]
     else:
         for i in range(3):
-            rgb[i] = bytes[i]
+            rgb[i] = stringBytes[i]
 
     return tuple(rgb)
 
 def findNextWord(currentWord, markovModel):
-    """ Uses our frequency table to return the next word in our sequence. """
+    """ Use our frequency table to get the next word in sequence. """
 
     potentialWords = []
 
-    # For a potential next word's multiplicity, add it to the potentialWords array that many times
+    # For each potential next word's multiplicity, add it to the potentialWords list that many times
+    # This represents how some words are more frequent than others
     for word in markovModel[currentWord]:
         for i in range(markovModel[currentWord][word]):
             potentialWords.append(word)
 
-    # Pick something randomly out of the potentialWords array, and that's our next word
+    # Pick something out of the potentialWords list to be our next word
     nextWord = random.choice(potentialWords)
 
     return nextWord
@@ -108,14 +109,14 @@ def main():
 
     # Create screen
     pygame.init()
-    screen = pygame.display.set_mode((width, height))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     screen.fill((0, 0, 0))
 
     # Build our Markov table
-    markovModel = buildFrequencyTable(sourceText)
+    markovModel = buildFrequencyTable(SOURCE_TEXT)
 
     # Find how many squares we can fit on our screen
-    numberOfSquares = ceil((width * height) / 100)
+    numberOfSquares = ceil((WIDTH * HEIGHT) / 100)
 
     # Pick a random starting value
     word = random.sample(markovModel.items(), 1)[0][0]
@@ -135,14 +136,14 @@ def main():
         word = findNextWord(word, markovModel)
         color = getColorFromString(word)
 
-        # Draw the rectangle
+        # Draw the tile
         pygame.draw.rect(screen, color, pygame.Rect(x, y, 10, 10))
         pygame.display.flip()
 
         # Change x and y so the next square is in the right place.
         # If we're at the edge of the screen, loop to the next row.
         x += 10
-        if x > width:
+        if x > WIDTH:
             x = 0
             y += 10
 
@@ -153,9 +154,9 @@ def main():
     # Keep pygame going until we close it
     running = True
     while running:
-      for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-          running = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
 if __name__ == "__main__":
     main()
