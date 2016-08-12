@@ -14,11 +14,11 @@ from math import ceil
 import pygame
 
 # Size of screen
-WIDTH = 800
-HEIGHT = 640
+width = 800
+height = 640
 
 # Sample text
-SOURCE_TEXT = ("Stop. Who would cross the Bridge of Death must answer me these questions three,"
+sampleText = ("Stop. Who would cross the Bridge of Death must answer me these questions three,"
                 " ere the other side he see. Ask me the questions, bridgekeeper."
                 " I am not afraid. What... is your name? My name is Sir Lancelot of Camelot."
                 " What... is your quest? To seek the Holy Grail. What... is your favourite colour?"
@@ -37,11 +37,11 @@ SOURCE_TEXT = ("Stop. Who would cross the Bridge of Death must answer me these q
                 " [he is thrown over] Auuuuuuuugh. How do know so much about swallows?"
                 " Well, you have to know these things when you're a king, you know.")
 
-def buildFrequencyTable(sourceText):
+def buildFrequencyTable(text):
     """ Build a table pairing each word in the sample text with what word(s) are most likely to come after it. """
 
     # Turn the input text into a list of words/tokens
-    sourceList = sourceText.split()
+    sourceList = text.split()
 
     # Start our model as an empty dictionary
     markovModel = {}
@@ -109,14 +109,14 @@ def main():
 
     # Create screen
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((width, height))
     screen.fill((0, 0, 0))
 
     # Build our Markov table
-    markovModel = buildFrequencyTable(SOURCE_TEXT)
+    markovModel = buildFrequencyTable(sampleText)
 
     # Find how many squares we can fit on our screen
-    numberOfSquares = ceil((WIDTH * HEIGHT) / 100)
+    numberOfSquares = ceil((width * height) / 100)
 
     # Pick a random starting value
     word = random.sample(markovModel.items(), 1)[0][0]
@@ -143,7 +143,7 @@ def main():
         # Change x and y so the next square is in the right place.
         # If we're at the edge of the screen, loop to the next row.
         x += 10
-        if x > WIDTH:
+        if x > width:
             x = 0
             y += 10
 
