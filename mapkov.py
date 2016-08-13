@@ -7,15 +7,16 @@ Each word in the sample text corresponds to a single RGB color.
 Using the frequency table we make from the text, we can procedurally
 generate a map of colored tiles that follows the same pattern.
 
-This is intended for use generating a map for some kind of 2D game. """
+Basically a way of visualing the patterns in a block of text.
+It's intended for use procedurally generating maps in some kind of 2D game. """
 
 import random
 from math import ceil
 import pygame
 
 # Size of screen
-width = 800
-height = 640
+width = 300
+height = 300
 
 # Sample text
 sampleText = ("Stop. Who would cross the Bridge of Death must answer me these questions three,"
@@ -36,7 +37,8 @@ sampleText = ("Stop. Who would cross the Bridge of Death must answer me these qu
                 " What do you mean? An African or European swallow? Huh? I... I don't know that."
                 " [he is thrown over] Auuuuuuuugh. How do know so much about swallows?"
                 " Well, you have to know these things when you're a king, you know.")
-
+                
+                
 def buildFrequencyTable(text):
     """ Build a table pairing each word in the sample text with what word(s) are most likely to come after it. """
 
@@ -74,17 +76,17 @@ def getColorFromString(baseString):
     """ Take an arbitrary string and return a RGB tuple from the first 3 bytes. """
 
     # Get byte array of string
-    stringBytes = bytearray(baseString.encode('utf8'))
+    hash = 0
+    
+    # Hash it together using the sdbm algorithm
+    for c in baseString:
+        hash = hash * (ord(c) - 1) * 65599 + ord(c)
+        
+    rgb = [0,0,0]
 
-    # Default values in case the byte array length < 3
-    rgb = [0, 0, 0]
-
-    if len(stringBytes) <= 3:
-        for i in range(len(stringBytes)):
-            rgb[i] = stringBytes[i]
-    else:
-        for i in range(3):
-            rgb[i] = stringBytes[i]
+    # Split it up into 3 separate values
+    for i in range(3):
+        rgb[i] = int((hash >> (i * 8)) & 0xFF)
 
     return tuple(rgb)
 
@@ -94,7 +96,7 @@ def findNextWord(currentWord, markovModel):
     potentialWords = []
 
     # For each potential next word's multiplicity, add it to the potentialWords list that many times
-    # This represents how some words are more frequent than others
+    # It's how we represent some words being more frequent than others
     for word in markovModel[currentWord]:
         for i in range(markovModel[currentWord][word]):
             potentialWords.append(word)
@@ -106,6 +108,7 @@ def findNextWord(currentWord, markovModel):
 
 
 def main():
+    """ Creates pygame window and runs the main process """
 
     # Create screen
     pygame.init()
@@ -116,7 +119,7 @@ def main():
     markovModel = buildFrequencyTable(sampleText)
 
     # Find how many squares we can fit on our screen
-    numberOfSquares = ceil((width * height) / 100)
+    numberOfSquares = ceil(((width * height) / 25) + (width / 5))
 
     # Pick a random starting value
     word = random.sample(markovModel.items(), 1)[0][0]
@@ -137,17 +140,17 @@ def main():
         color = getColorFromString(word)
 
         # Draw the tile
-        pygame.draw.rect(screen, color, pygame.Rect(x, y, 10, 10))
+        pygame.draw.rect(screen, color, pygame.Rect(x, y, 5, 5))
         pygame.display.flip()
 
         # Change x and y so the next square is in the right place.
         # If we're at the edge of the screen, loop to the next row.
-        x += 10
+        x += 5
         if x > width:
             x = 0
-            y += 10
+            y += 5
 
-        print(word, color)
+        #print(word, color)
 
     print("Done!")
 
