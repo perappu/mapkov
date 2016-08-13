@@ -150,7 +150,7 @@ def main():
             x = 0
             y += 5
 
-        #print(word, color)
+        print(word, color)
 
     print("Done!")
 
