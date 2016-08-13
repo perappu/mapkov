@@ -1,0 +1,1 @@
+Generates a map of tiles based on the patterns found in a block of text.
